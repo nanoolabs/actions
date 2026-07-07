@@ -17,4 +17,4 @@ runs:
       id: git-cliff
       with:
         config: ${{ github.action_path }}/../cliff.toml
-        args: --unreleased --tag ${{ inputs.version }}
+        args: --latest
