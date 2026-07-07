@@ -1,0 +1,20 @@
+name: "Nanoolabs Release Tool"
+description: "Standardized release generation with centralized kaomoji cliff"
+inputs:
+  version:
+    description: "Target release version (e.g., v1.0.0)"
+    required: true
+outputs:
+  changelog:
+    description: "Generated markdown changelog"
+    value: ${{ steps.git-cliff.outputs.content }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Centralized Git Cliff
+      uses: orhun/git-cliff-action@v4
+      id: git-cliff
+      with:
+        config: ${{ github.action_path }}/../cliff.toml
+        args: --unreleased --tag ${{ inputs.version }}
