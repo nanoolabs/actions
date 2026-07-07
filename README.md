@@ -1,9 +1,9 @@
-# Nanoolabs Actions `[⌐■_■]`
+# Nanoolabs Actions [⌐■_■]
 
 This is the central repository for Nanoo Labs GitHub Actions and CI/CD automation.
 Instead of copying CI/CD scripts into every single project, we keep them all here. This rule makes our project repositories clean, speeds up build times, and makes sure every project shares the exact same release style.
 
-## Available Actions `[ ^ ■ ^ ]`
+## Available Actions [ ^ ■ ^ ]
 
 ### 1. Release Tracker (`release-action`)
 
@@ -45,7 +45,7 @@ jobs:
           target_commitish: main
 ```
 
-### How It Works `[ ¬■_■ ]`
+### How It Works [ ¬■_■ ]
 
-- cliff.toml: The global settings for git-cliff. It reads your Conventional Commits and maps them to our standard UI kaomojis (like `「 ■_■ 」` or `| ■_■ |`).
+- cliff.toml: The global settings for git-cliff. It reads your Conventional Commits and maps them to our standard UI kaomojis (like `[ ⩴_⩴ ]` or `| ■_■ |`).
 - release-action/action.yml: The wrapper script that runs the changelog generator without download extra files during the build.
