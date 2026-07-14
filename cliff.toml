@@ -1,15 +1,13 @@
 [changelog]
 header = """
 # Changelog
-
-All notable changes to this project will be documented in this file.
 """
 
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    ## {{ version | trim_start_matches(pat="v") }}
 {% else %}\
-    ## [Unreleased]
+    ## Unreleased
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group }}
@@ -35,16 +33,16 @@ filter_unconventional = false
 sort_commits = "newest"
 
 commit_parsers = [
-  { message = "^feat(\\(.*\\))?!?:", group = "Features  [ ^■^ ]" },
-  { message = "^fix(\\(.*\\))?!?:", group = "Bug Fixes  [ ;■_■ ]" },
-  { message = "^perf(\\(.*\\))?!?:", group = "Performance  [ █_█ ]" },
-  { message = "^refactor(\\(.*\\))?!?:", group = "Refactoring  [ ▞▚_▚▞ ]" },
-  { message = "^doc(\\(.*\\))?s?:", group = "Documentation  [ ▦_▦ ]" },
-  { message = "^style(\\(.*\\))?!?:", group = "Styling & UI  [ ▣_▣ ]" },
-  { message = "^ci(\\(.*\\))?!?:", group = "CI/CD  [ ☁_■ ]" },
-  { message = "^chore(\\(.*\\))?!?:", group = "Maintenance  [ ▓_▓ ]" },
-  { message = "^test(\\(.*\\))?!?:", group = "Testing  [ ¬■_■ ]" },
-  { message = ".*", group = "Other  [ □_□ ]" },
+  { message = "^feat(\\(.*\\))?!?:", group = "[^■^] — Features" },
+  { message = "^fix(\\(.*\\))?!?:", group = "[;■_■] — Bug Fixes" },
+  { message = "^perf(\\(.*\\))?!?:", group = "[█_█] — Performance" },
+  { message = "^refactor(\\(.*\\))?!?:", group = "[⌐■_■] — Refactoring" },
+  { message = "^doc(\\(.*\\))?s?:", group = "[▦_▦] — Documentation" },
+  { message = "^style(\\(.*\\))?!?:", group = "[▣_▣] — Styling & UI" },
+  { message = "^ci(\\(.*\\))?!?:", group = "[☁_■] — CI/CD" },
+  { message = "^chore(\\(.*\\))?!?:", group = "[▓_▓] — Maintenance" },
+  { message = "^test(\\(.*\\))?!?:", group = "[¬■_■] — Testing" },
+  { message = ".*", group = "[□_□] — Other" },
 ]
 
 filter_commits = false

@@ -30,7 +30,7 @@ jobs:
 
       # Run the central release tracker
       - name: Generate Changelog
-        uses: nanoolabs/actions/release-action@main
+        uses: nanoolabs/actions/release-action@release-action-v1
         id: release_tool
         with:
           version: ${{ steps:get_version.outputs.VERSION }}
