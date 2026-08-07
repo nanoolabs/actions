@@ -1,4 +1,4 @@
-# [⌐■_■] — Nanoolabs Actions
+# [⌐■_■] Nanoolabs Actions
 
 This is the central repository for Nanoo Labs GitHub Actions and CI/CD automation.
 Instead of copying CI/CD scripts into every single project, we keep them all here. This rule makes our project repositories clean, speeds up build times, and makes sure every project shares the exact same release style.
@@ -28,12 +28,17 @@ jobs:
         id: get_version
         run: echo "VERSION=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
+      # Save tag before running git cliff
+      - name: Create Tag
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          git tag ${{ steps.get_version.outputs.VERSION }}
+          git push origin ${{ steps.get_version.outputs.VERSION }}
+
       # Run the central release tracker
       - name: Generate Changelog
         uses: nanoolabs/actions/release-action@release-action-v1
         id: release_tool
-        with:
-          version: ${{ steps:get_version.outputs.VERSION }}
 
       # Publish the GitHub Release
       - name: Create GitHub Release

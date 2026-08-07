@@ -46,7 +46,7 @@ commit_parsers = [
 ]
 
 filter_commits = false
-tag_pattern = "v[0-9]*"
+tag_pattern = "(release-action-)?v[0-9.]+"
 
 [remote.github]
 owner = "nanoolabs"
