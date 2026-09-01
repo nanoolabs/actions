@@ -1,5 +1,10 @@
 name: "Nanoolabs Release Tool"
 description: "Standardized release generation with centralized kaomoji cliff"
+inputs:
+  config:
+    description: "Path to a custom cliff.toml (relative to repo root). Fall back to the repo own cliff.toml, then the bundled default"
+    required: false
+    default: ""
 outputs:
   changelog:
     description: "Generated markdown changelog"
@@ -8,9 +13,22 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - id: resolve
+      shell: bash
+      env:
+        USER_CONFIG: ${{ inputs.config }}
+      run: |
+        if [ -n "$USER_CONFIG" ]; then
+          CFG="$GITHUB_WORKSPACE/$USER_CONFIG"
+        elif [ -f "$GITHUB_WORKSPACE/cliff.toml" ]; then
+          CFG="$GITHUB_WORKSPACE/cliff.toml"
+        else
+          CFG="${{ github.action_path }}/../cliff.toml"
+        fi
+        echo "config=$CFG" >> "$GITHUB_OUTPUT"
     - name: Run Centralized Git Cliff
       uses: orhun/git-cliff-action@v4
       id: git-cliff
       with:
-        config: ${{ github.action_path }}/../cliff.toml
+        config: ${{ steps.resolve.outputs.config }}
         args: --latest
