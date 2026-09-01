@@ -8,7 +8,7 @@ Instead of copying CI/CD scripts into every single project, we keep them all her
 ### 1. Release Tracker (`release-action`)
 
 This action automatically creates GitHub Releases and writes changelogs using `git-cliff`.
-It uses our global `cliff.toml` file to inject nanoolabs' custom kaomoji into the release notes. It also hides commit scopes to keep the changelog text clean and easy to read.
+It uses our global `cliff.toml` file to inject nanoolabs custom kaomoji to the release notes. Commit lines are terse; a `**scope:**` prefix only render when the commit actually has one.
 
 #### How to Use
 
@@ -37,20 +37,26 @@ jobs:
 
       # Run the central release tracker
       - name: Generate Changelog
-        uses: nanoolabs/actions/release-action@release-action-v1
+        uses: nanoolabs/actions/release-action@v2
         id: release_tool
 
-      # Publish the GitHub Release
+      # Publish the GitHub release (version is already the title,`v2.2.6`)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps:get_version.outputs.VERSION }}
-          name: Release ${{ steps:get_version.outputs.VERSION }}
-          body: ${{ steps:release_tool.outputs.changelog }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: ${{ steps.get_version.outputs.VERSION }}
+          body: ${{ steps.release_tool.outputs.changelog }}
           target_commitish: main
 ```
 
+> Pin by the bare major tag (`@v2`) this repo hold a single action, so the tag doesn't repeat the action name (contrast `@release-action-v2`)
+
 ### How It Works
 
-- cliff.toml: The global settings for git-cliff. It reads your Conventional Commits and maps them to our standard UI kaomojis (like `[;■_■]` or `[✖_✖]`).
-- release-action/action.yml: The wrapper script that runs the changelog generator without download extra files during the build.
+- `cliff.toml`: the global git-cliff settings. It reads Conventional Commits and maps them to Nanoo kaomojis copy from `nanoolabs/kaomoji` (e.g. `[ ^■^ ] Features`, `[ ;■_■ ] Bug Fixes`). Header is plain `## Changelog. no version, no footer. Commit lines are terse; scope only render for commits that have one. One`[Full diff]` compare link sits at the top.
+- `release-action/action.yml`: the wrapper that runs the generator without download extra files during the build.
+
+#### Per-repo config override
+
+The action `config` input (default: empty) chooses its `cliff.toml` in this order: explicit `config` input → a repo-local `cliff.toml` at the consumer repo root → the bundle default. Drop a `cliff.toml` in a consumer repo to customize its changelog (custom commit types, custom kaomoji, monorepo scopes) without touching the share one.
