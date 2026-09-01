@@ -1,53 +1,79 @@
+# Nanoo Labs standard git-cliff config
+#
+# Consume as the bundled default by `nanoolabs/actions/release-action`, and overridable
+# per-repo via the action's `config` input (repo-local `cliff.toml` > this default).
+#
+# Comment style: explain the DECISION (why), not the code (what). every non obvious option
+# carries a one line reason so a future dev knows.
+
 [changelog]
+# Header is the only heading. The version lives in the GitHub Release title, so we don't
+# bake `## v1.2.3` to the body, that duplication is noise (match Nuxt's style).
 header = """
-# Changelog
+## Changelog
 """
 
+# Body template:
+# - One `[Full diff]` compare link on top replaces per-commit `(by @x via abc123)` links.
+#   Inline attribution is noise (current, single maintainer); a single diff link is all that's needed.
+# - groups render in `commit_parsers` order via the `<!-- N -->` sort hints below, NOT
+#   alphabetically, alphabetical made the changelog look scramble.
+# - Commit lines are terse. The `**scope:**` prefix render ONLY when the commit has a
+#   scope, so a bare `feat: x` stay `- x` (never empty `**:`).
 body = """
-{% if version %}\
-    ## {{ version | trim_start_matches(pat="v") }}
-{% else %}\
-    ## Unreleased
-{% endif %}\
+{% if previous.version and version %}[Full diff](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/compare/{{ previous.version }}...{{ version }}){% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group }}
-    {% for commit in commits %}
-        - {% if commit.breaking %}**[ ✖_✖ ] BREAKING:** {% endif %}\
-          {{ commit.message | upper_first }} \
-          ({% if commit.remote.username %}by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}) via {% endif %}\
-          [`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}))\
-    {% endfor %}
+### {{ group | striptags | trim | upper_first }}
+{% for commit in commits %}
+- {% if commit.breaking %}**[ ✖_✖ ] BREAKING:** {% endif %}{% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}{% endfor %}
 {% endfor %}\n
 """
 
-footer = """
-***
-*Generated automatically by Nanoo Labs Pipeline.*
-"""
-
+# Strip leading/trailing whitespace from the render body.
 trim = true
 
 [git]
+# Parse conventional commits (feat/fix/...) so we can group by kaomoji.
 conventional_commits = true
+# Don't fail on non-conventional commits, they land in `[ □_□ ] Other` instead.
 filter_unconventional = false
+# Newest commit first within each group.
 sort_commits = "newest"
 
+# Conventional-commit type -> kaomoji group. The kaomoji value is copy byte-for-byte
+# from `nanoolabs/kaomoji` (single source of trut). SOME have inner padding
+# (`[ ^■^ ]`), some don't (`[⌐■_■]`); that padding is intentional (glyph widthh alignment),
+# do not "normalize" it. The `<!-- N -->` prefix is a sort-order hint stripped at render
+# time by `striptags`, so group order === this array order instead alphabetical.
 commit_parsers = [
-  { message = "^feat(\\(.*\\))?!?:", group = "[^■^] — Features" },
-  { message = "^fix(\\(.*\\))?!?:", group = "[;■_■] — Bug Fixes" },
-  { message = "^perf(\\(.*\\))?!?:", group = "[█_█] — Performance" },
-  { message = "^refactor(\\(.*\\))?!?:", group = "[⌐■_■] — Refactoring" },
-  { message = "^doc(\\(.*\\))?s?:", group = "[▦_▦] — Documentation" },
-  { message = "^style(\\(.*\\))?!?:", group = "[▣_▣] — Styling & UI" },
-  { message = "^ci(\\(.*\\))?!?:", group = "[☁_■] — CI/CD" },
-  { message = "^chore(\\(.*\\))?!?:", group = "[▓_▓] — Maintenance" },
-  { message = "^test(\\(.*\\))?!?:", group = "[¬■_■] — Testing" },
-  { message = ".*", group = "[□_□] — Other" },
+  { message = "^feat(\\(.*\\))?!?:", group = "<!-- 0 -->[ ^■^ ] Features" },
+  { message = "^fix(\\(.*\\))?!?:", group = "<!-- 1 -->[ ;■_■ ] Bug Fixes" },
+  { message = "^perf(\\(.*\\))?!?:", group = "<!-- 2 -->[ █_█ ] Performance" },
+  { message = "^refactor(\\(.*\\))?!?:", group = "<!-- 3 -->[⌐■_■] Refactoring" },
+  { message = "^doc(\\(.*\\))?s?:", group = "<!-- 4 -->[ ▦_▦ ] Documentation" },
+  { message = "^style(\\(.*\\))?!?:", group = "<!-- 5 -->[ ▣_▣ ] Styling & UI" },
+  { message = "^ci(\\(.*\\))?!?:", group = "<!-- 6 -->[ ☁_■ ] CI/CD" },
+  { message = "^chore(\\(.*\\))?!?:", group = "<!-- 7 -->[ ▓_▓ ] Maintenance" },
+  { message = "^test(\\(.*\\))?!?:", group = "<!-- 8 -->[ ¬■_■ ] Testing" },
+  { message = ".*", group = "<!-- 9 -->[ □_□ ] Other" },
 ]
 
 filter_commits = false
-tag_pattern = "(release-action-)?v[0-9.]+"
+
+# Broad tag pattern matching every Nanoo scheme at once: plain semver (`v2.2.5`),
+# CalVer (`v2026.07.30`), prerelease (`v2.2.6-beta.4`), and per-action tags
+# (`release-action-v1`). git-cliff only needs to MATCH tags as release boundaries, it
+# never interpret semver-vs-CalVer semantic, so one broad pattern serves all repos
+# without per-scheme override.
+tag_pattern = "(?:release-action-)?v[0-9][0-9.]*(?:-[0-9a-zA-Z][0-9a-zA-Z.]*)?"
+# Prereleases are NOT release boundaries by default: fold alpha/beta/rc/dev/next commits
+# into the next stable release instead of emitting a separate page. The consumer workflow
+# tags stable versions only, so `--latest` must keep targeting the last STABLE tag. A repo
+# that wants separate pre-release pages overrides (unset relevant term) via `config`
+ignore_tags = "alpha|beta|rc|dev|next"
 
 [remote.github]
+# owner is the org (fixed). repo is intentionally empty, git-cliff fill it from the VCS
+# remote URL at runtime, so this one bundle config works for every consuming repo.
 owner = "nanoolabs"
 repo = ""
