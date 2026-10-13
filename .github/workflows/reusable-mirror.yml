@@ -1,0 +1,39 @@
+name: Reusable Codeberg Mirror
+
+on:
+  workflow_call:
+    inputs:
+      codeberg_repo_name:
+        description: Target repo name on Codeberg (defaults to GitHub repo name)
+        required: false
+        type: string
+        default: ''
+    secrets:
+      CODEBERG_TOKEN:
+        description: Forgejo access token with repository write scope
+        required: true
+
+concurrency:
+  group: mirror-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Codeberg
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+        run: |
+          NAME="${{ inputs.codeberg_repo_name || github.event.repository.name }}"
+          git remote add codeberg "https://codeberg.org/nanoolabs/${NAME}.git"
+          git update-ref -d refs/remotes/origin/HEAD 2>/dev/null || true
+          git -c 'credential.helper=!f() { echo username=oauth2; echo password=$CODEBERG_TOKEN; }; f' \
+            push codeberg --force --prune \
+            "refs/remotes/origin/*:refs/heads/*" \
+            "refs/tags/*:refs/tags/*"
