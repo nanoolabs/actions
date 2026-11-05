@@ -33,12 +33,13 @@ commit_parsers = [
   { message = "^fix(\\(.*\\))?!?:", group = "<!-- 1 -->[ ;■_■ ] Bug Fixes" },
   { message = "^perf(\\(.*\\))?!?:", group = "<!-- 2 -->[ █_█ ] Performance" },
   { message = "^refactor(\\(.*\\))?!?:", group = "<!-- 3 -->[⌐■_■] Refactoring" },
-  { message = "^doc(\\(.*\\))?s?:", group = "<!-- 4 -->[ ▦_▦ ] Documentation" },
-  { message = "^style(\\(.*\\))?!?:", group = "<!-- 5 -->[ ▣_▣ ] Styling & UI" },
-  { message = "^ci(\\(.*\\))?!?:", group = "<!-- 6 -->[ ☁_■ ] CI/CD" },
-  { message = "^chore(\\(.*\\))?!?:", group = "<!-- 7 -->[ ▓_▓ ] Maintenance" },
-  { message = "^test(\\(.*\\))?!?:", group = "<!-- 8 -->[ ¬■_■ ] Testing" },
-  { message = ".*", group = "<!-- 9 -->[ □_□ ] Other" },
+  { message = "^build(\\(.*\\))?!?:", group = "<!-- 4 -->[ ▄_█ ] Build" },
+  { message = "^doc(\\(.*\\))?s?:", group = "<!-- 5 -->[ ▦_▦ ] Documentation" },
+  { message = "^style(\\(.*\\))?!?:", group = "<!-- 6 -->[ ▣_▣ ] Styling & UI" },
+  { message = "^ci(\\(.*\\))?!?:", group = "<!-- 7 -->[ ☁_■ ] CI/CD" },
+  { message = "^chore(\\(.*\\))?!?:", group = "<!-- 8 -->[ ▓_▓ ] Maintenance" },
+  { message = "^test(\\(.*\\))?!?:", group = "<!-- 9 -->[ ¬■_■ ] Testing" },
+  { message = ".*", group = "<!-- 10 -->[ □_□ ] Other" },
 ]
 
 filter_commits = false
