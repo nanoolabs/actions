@@ -1,0 +1,70 @@
+name: 'Setup Runtime'
+description: 'Setup Node.js runtime with package manager and cache'
+inputs:
+  version:
+    description: 'Node version (or auto-detect from .tool-versions)'
+    required: false
+    type: string
+    default: ''
+  package-manager:
+    description: 'Package manager to use'
+    required: false
+    type: string
+    default: 'pnpm'
+  cache-key:
+    description: 'Custom cache key suffix'
+    required: false
+    type: string
+    default: ''
+outputs:
+  node-version:
+    description: 'Resolved Node version'
+    value: ${{ steps.resolve-version.outputs.version }}
+  cache-hit:
+    description: 'Whether cache was hit'
+    value: ${{ steps.cache.outputs.cache-hit }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Resolve Node version
+      id: resolve-version
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.version }}" ]; then
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+        elif [ -f ".tool-versions" ]; then
+          version=$(grep "^node\s" .tool-versions | head -1 | awk '{print $2}')
+          echo "version=${version:-latest}" >> $GITHUB_OUTPUT
+        else
+          echo "version=22" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ steps.resolve-version.outputs.version }}
+        cache: ${{ inputs.package-manager }}
+        cache-dependency-path: ${{ inputs.cache-key }}
+
+    - name: Set pnpm version
+      if: inputs.package-manager == 'pnpm'
+      shell: bash
+      run: |
+        corepack enable pnpm
+        if [ -f "package.json" ]; then
+          pnpm_version=$(node -p "require('./package.json').packageManager?.split('@')[1] || ''")
+          if [ -n "$pnpm_version" ]; then
+            corepack prepare pnpm@$pnpm_version --activate
+          fi
+        fi
+
+    - name: Cache node_modules
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.npm
+          node_modules
+        key: ${{ runner.os }}-node-${{ steps.resolve-version.outputs.version }}-${{ inputs.package-manager }}-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock') }}-${{ inputs.cache-key }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ steps.resolve-version.outputs.version }}-${{ inputs.package-manager }}-
