@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# detect version tag from git describe (git-cliff not available in composite action)
+# detect version tag from git tags (git-cliff not available in composite action)
 
 set -euo pipefail
 
-# try git describe first (works without git-cliff binary)
-tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+# use git tag --sort=-v:refname for reliable latest semantic version
+# git describe --tags --abbrev=0 behavior varies by Git version
+# https://git-scm.com/docs/git-tag/2.12.5#Documentation/git-tag.txt---sortkey
+tag=$(git tag --sort=-v:refname 2>/dev/null | head -1 || echo "")
 
 # fallback: parse git-cliff output if git-cliff happens to be available
 if [ -z "$tag" ] && command -v git-cliff >/dev/null 2>&1; then
