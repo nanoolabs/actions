@@ -40,9 +40,17 @@ runs:
       shell: bash
       run: echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
 
+    - name: Build git-cliff args
+      id: build-args
+      shell: bash
+      run: ${{ github.action_path }}/build-args.sh
+      env:
+        VERSION: ${{ steps.detect-version.outputs.version || steps.set-version.outputs.version }}
+        TAG_PATTERN: ${{ inputs.tag-pattern }}
+
     - name: Run git-cliff
       id: git-cliff
       uses: orhun/git-cliff-action@v4
       with:
         config: ${{ inputs.config-path != '' && inputs.config-path || github.action_path }}/../../cliff.toml
-        args: ${{ format('--latest {0} {1}', inputs.version != '' && format('--tag {0}', inputs.version) || '', inputs.tag-pattern != '' && format('--tag-pattern {0}', inputs.tag-pattern) || '') }}
+        args: ${{ steps.build-args.outputs.args }}
