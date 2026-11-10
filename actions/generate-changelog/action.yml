@@ -1,0 +1,48 @@
+name: "Generate Changelog"
+description: "Generate changelog from conventional commits using git-cliff"
+inputs:
+  config-path:
+    description: "Path to git-cliff config. Defaults to bundled cliff.toml"
+    required: false
+    type: string
+    default: ""
+  version:
+    description: "Explicit version tag. Default to --latest detection"
+    required: false
+    type: string
+    default: ""
+  tag-pattern:
+    description: "Custom tag pattern for git-cliff"
+    required: false
+    type: string
+    default: ""
+outputs:
+  changelog:
+    description: "Generated markdown changelog"
+    value: ${{ steps.git-cliff.outputs.content }}
+  version:
+    description: "Detected or provide version"
+    value: ${{ steps.detect-version.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Detect version
+      id: detect-version
+      if: inputs.version == ''
+      shell: bash
+      run: ${{ github.action_path }}/detect-version.sh
+      env:
+        CONFIG: ${{ inputs.config-path != '' && inputs.config-path || github.action_path }}/../../cliff.toml
+
+    - name: Set explicit version
+      if: inputs.version != ''
+      id: set-version
+      shell: bash
+      run: echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+
+    - name: Run git-cliff
+      id: git-cliff
+      uses: orhun/git-cliff-action@v4
+      with:
+        config: ${{ inputs.config-path != '' && inputs.config-path || github.action_path }}/../../cliff.toml
+        args: ${{ format('--latest {0} {1}', inputs.version != '' && format('--tag {0}', inputs.version) || '', inputs.tag-pattern != '' && format('--tag-pattern {0}', inputs.tag-pattern) || '') }}

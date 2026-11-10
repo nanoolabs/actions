@@ -1,3 +1,17 @@
+# Reusable Codeberg Mirror
+# CONTRACT:
+# - type: reusable workflow
+# - consumers: nanoolabs org repos
+# - tag: reusable-mirror.yml@mirror-v1
+# - inputs:
+#     codeberg_repo_name (string, optional, default: github repo name)
+# - secrets:
+#     CODEBERG_TOKEN (require, forgejo token with repo write scope)
+# - outputs: none
+# - permissions: contents: write (via token)
+# - security: HIGH - token has broad repo access
+# - failure: fails on auth/network/push error, no retry
+
 name: Reusable Codeberg Mirror
 
 on:
