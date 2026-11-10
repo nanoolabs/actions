@@ -21,7 +21,7 @@ on:
         description: Target repo name on Codeberg (defaults to GitHub repo name)
         required: false
         type: string
-        default: ''
+        default: ""
     secrets:
       CODEBERG_TOKEN:
         description: Forgejo access token with repository write scope
@@ -47,7 +47,11 @@ jobs:
           NAME="${{ inputs.codeberg_repo_name || github.event.repository.name }}"
           git remote add codeberg "https://codeberg.org/nanoolabs/${NAME}.git"
           git update-ref -d refs/remotes/origin/HEAD 2>/dev/null || true
-          git -c 'credential.helper=!f() { echo username=oauth2; echo password=$CODEBERG_TOKEN; }; f' \
+          # use git credential helper with temp file to avoid token in process table
+          CRED_FILE=$(mktemp)
+          echo "https://oauth2:${CODEBERG_TOKEN}@codeberg.org" > "$CRED_FILE"
+          git -c "credential.helper=store --file=${CRED_FILE}" \
             push codeberg --force --prune \
             "refs/remotes/origin/*:refs/heads/*" \
             "refs/tags/*:refs/tags/*"
+          rm -f "$CRED_FILE"
