@@ -10,9 +10,7 @@ insert_final_newline = true
 
 [*.{sh,bash}]
 indent_size = 2
-# shfmt defaults
-# -ci: indent switch cases
-# -sr: redirect operators
+# shfmt applies -ci (case indent) and -sr (space redirects) by default
 
 [*.yml]
 indent_size = 2
