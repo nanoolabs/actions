@@ -28,7 +28,7 @@ on:
         required: true
 
 concurrency:
-  group: mirror-${{ github.repository }}-${{ github.ref }}
+  group: mirror-${{ github.repository }}
   cancel-in-progress: true
 
 jobs:
