@@ -1,42 +1,46 @@
 # setup-runtime
 
-> Setup Node.js runtime with package manager and cache
+> Setup Deno runtime with cache
 
-## Input
+## Inputs
 
-| Name              | Required | Default     | Description                            |
-| ----------------- | -------- | ----------- | -------------------------------------- |
-| `version`         | No       | auto-detect | node version (or from .tool-versions)  |
-| `package-manager` | No       | `pnpm`      | package manager: `pnpm`, `npm`, `yarn` |
-| `cache-key`       | No       | ``          | custom cache key suffix                |
+| Name        | Required | Default     | Description                                  |
+| ----------- | -------- | ----------- | -------------------------------------------- |
+| `version`   | No       | auto-detect | Deno version (or from .tool-versions/.dvmrc) |
+| `cache-key` | No       | ``          | Custom cache key suffix                      |
 
-## Output
+## Outputs
 
 | Name           | Description                        |
 | -------------- | ---------------------------------- |
-| `node-version` | resolve Node version               |
-| `cache-hit`    | whether cache was hit (true/false) |
+| `deno-version` | Resolved Deno version              |
+| `cache-hit`    | Whether cache was hit (true/false) |
 
 ## Usage
 
 ```yaml
 - uses: nanoolabs/actions/actions/setup-runtime@v1
   with:
-    version: '24'
-    package-manager: pnpm
+    version: "2" # optional, auto-detects from .tool-versions/.dvmrc
     # cache-key: custom-suffix
 
-- run: pnpm install --frozen-lockfile
+- run: deno install
 ```
 
 ## Behavior
 
-- Auto detect version from `.tool-versions` (asdf)
-- Use `actions/setup-node@v4`
-- Enable corepack for pnpm
-- Caches `node_modules` and npm cache
-- Cache key includes lockfile hash for automatic invalidation
+- Auto detect version from `.tool-versions` (asdf) or `.dvmrc` (dvm)
+  - `.tool-versions`: strips inline comments, handles leading whitespace
+  - `.dvmrc`: picks first line starting with digit
+- Uses `denoland/setup-deno@v2`
+- Caches `~/.cache/deno`
+- Cache key includes `deno.lock` / `import_map.json` hash for automatic invalidation
 
 ## Renovate
 
-> Btw, detects Node version from `.tool-versions` for automated dependency updates
+Detects Deno version from `.tool-versions` / `.dvmrc` for automated dependency updates
+
+## Security
+
+- No secrets required
+- Permissions: `contents: read`

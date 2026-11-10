@@ -1,83 +1,47 @@
-name: 'Setup Runtime'
-description: 'Setup Node.js runtime with package manager and cache'
+name: "Setup Runtime"
+description: "Setup Deno runtime with cache"
 inputs:
   version:
-    description: 'Node version (or auto-detect from .tool-versions)'
+    description: "Deno version (or auto-detect from .tool-versions/.dvmrc)"
     required: false
     type: string
-    default: ''
-  package-manager:
-    description: 'Package manager to use'
-    required: false
-    type: string
-    default: 'pnpm'
+    default: ""
   cache-key:
-    description: 'Custom cache key suffix'
+    description: "Custom cache key suffix"
     required: false
     type: string
-    default: ''
+    default: ""
 outputs:
-  node-version:
-    description: 'Resolved Node version'
+  deno-version:
+    description: "Resolved Deno version"
     value: ${{ steps.resolve-version.outputs.version }}
   cache-hit:
-    description: 'Whether cache was hit'
-    value: ${{ steps.cache-pnpm.outputs.cache-hit || steps.cache-npm.outputs.cache-hit }}
+    description: "Whether cache was hit"
+    value: ${{ steps.cache-deno.outputs.cache-hit }}
+permissions:
+  contents: read
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: Resolve Node version
+    - name: Resolve Deno version
       id: resolve-version
       shell: bash
-      run: |
-        if [ -n "${{ inputs.version }}" ]; then
-          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
-        elif [ -f ".tool-versions" ]; then
-          version=$(grep "^node\s" .tool-versions | head -1 | awk '{print $2}')
-          echo "version=${version:-latest}" >> $GITHUB_OUTPUT
-        else
-          echo "version=22" >> $GITHUB_OUTPUT
-        fi
+      run: ${{ github.action_path }}/resolve-version.sh
+      env:
+        VERSION: ${{ inputs.version }}
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
+    - name: Setup Deno
+      uses: denoland/setup-deno@v2
       with:
-        node-version: ${{ steps.resolve-version.outputs.version }}
-        cache: ${{ inputs.package-manager }}
-        cache-dependency-path: ${{ inputs.cache-key }}
+        deno-version: ${{ steps.resolve-version.outputs.version }}
 
-    - name: Set pnpm version
-      if: inputs.package-manager == 'pnpm'
-      shell: bash
-      run: |
-        corepack enable pnpm
-        if [ -f "package.json" ]; then
-          pnpm_version=$(node -p "require('./package.json').packageManager?.split('@')[1] || ''")
-          if [ -n "$pnpm_version" ]; then
-            corepack prepare pnpm@$pnpm_version --activate
-          fi
-        fi
-
-    - name: Cache node_modules (pnpm)
-      if: inputs.package-manager == 'pnpm'
-      id: cache-pnpm
+    - name: Cache Deno
+      id: cache-deno
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.local/share/pnpm/store
-          node_modules
-        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ inputs.cache-key }}
+        path: ~/.cache/deno
+        key: >-
+          ${{ runner.os }}-deno-${{ steps.resolve-version.outputs.version }}-
+          ${{ hashFiles('**/deno.lock', '**/import_map.json') }}-${{ inputs.cache-key }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-
-
-    - name: Cache node_modules (npm)
-      if: inputs.package-manager != 'pnpm'
-      id: cache-npm
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.npm
-          node_modules
-        key: ${{ runner.os }}-node-${{ steps.resolve-version.outputs.version }}-${{ inputs.package-manager }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-${{ inputs.cache-key }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ steps.resolve-version.outputs.version }}-${{ inputs.package-manager }}-
+          ${{ runner.os }}-deno-${{ steps.resolve-version.outputs.version }}-
