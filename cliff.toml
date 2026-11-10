@@ -1,14 +1,17 @@
 # Nanoo Labs standard git-cliff config
-# Consumed by generate-changelog action (bundled default)
+# consumed by generate-changelog action (bundled default)
+# documentation git-cliff changelog: https://git-cliff.org/docs/configuration/changelog
 
 [changelog]
-# Version lives in GitHub Release title only - no version in body
+# version lives in GitHub Release title only - no version in body again
 header = """
 ## Changelog
 """
 
-# One [Full diff] link on top, terse commit lines, scope only when present
-# Groups render in commit_parsers order via <!-- N --> sort hints
+# - one [Full diff] link on top
+# - terse commit lines
+# - scope only when present
+# - groups render in commit_parsers order via <!-- N --> sort hints
 body = """
 {% if previous.version and version %}[Full diff](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/compare/{{ previous.version }}...{{ version }}){% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
@@ -25,8 +28,8 @@ conventional_commits = true
 filter_unconventional = false
 sort_commits = "newest"
 
-# Kaomoji groups copied byte-for-byte from nanoolabs/kaomoji
-# Inner padding intentional (glyph width alignment) - do not normalize
+# kaomoji groups copied byte-for-byte from nanoolabs/kaomoji
+# inner padding intentional (glyph width alignment) (do not normalize)
 # <!-- N --> prefix = sort order hint stripped by striptags
 commit_parsers = [
   { message = "^feat(\\(.*\\))?!?:", group = "<!-- 0 -->[ ^■^ ] Features" },
@@ -44,11 +47,19 @@ commit_parsers = [
 
 filter_commits = false
 
-# One pattern matches all Nanoo schemes: semver, CalVer, prerelease, action tags
+# one pattern matches all Nanoo schemes:
+# - semver
+# - CalVer
+# - prerelease
+# - action tags
 tag_pattern = "(?:release-action-)?v[0-9][0-9.]*(?:-[0-9a-zA-Z][0-9a-zA-Z.]*)?"
-# Prereleases folded into next stable (no separate pre-release pages)
+# prereleases folded into next stable,
+# no separate pre-release pages
 ignore_tags = "alpha|beta|rc|dev|next"
 
 [remote.github]
-owner = "nanoolabs"
+# owner and repo are intentionally empty
+# git-cliff infers them from git remote URL at runtime
+# this allows forks to work correctly without config override
+owner = ""
 repo = ""
