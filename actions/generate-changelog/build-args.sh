@@ -17,4 +17,4 @@ if [ -n "$TAG_PATTERN" ]; then
 fi
 
 # output as space separate string for GitHub Actions
-printf 'args=%s\n' "${ARGS[*]}" >> "$GITHUB_OUTPUT"
+printf 'args=%s\n' "${ARGS[*]}" >>"$GITHUB_OUTPUT"

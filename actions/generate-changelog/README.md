@@ -1,21 +1,21 @@
 # generate-changelog
 
-> generate changelog from conventional commits using git-cliff
+> Generate changelog from conventional commits using git-cliff
 
-## Input
+## Inputs
 
 | Name          | Required | Default     | Description                   |
 | ------------- | -------- | ----------- | ----------------------------- |
-| `config-path` | No       | bundled     | path to git-cliff config file |
-| `version`     | No       | auto-detect | explicit version tag          |
-| `tag-pattern` | No       | bundled     | custom tag pattern regex      |
+| `config-path` | No       | bundled     | Path to git-cliff config file |
+| `version`     | No       | auto-detect | Explicit version tag          |
+| `tag-pattern` | No       | bundled     | Custom tag pattern regex      |
 
-## Output
+## Outputs
 
 | Name        | Description                  |
 | ----------- | ---------------------------- |
-| `changelog` | generated markdown changelog |
-| `version`   | detected or provided version |
+| `changelog` | Generated markdown changelog |
+| `version`   | Detected or provided version |
 
 ## Usage
 
@@ -26,6 +26,10 @@
 
 - uses: nanoolabs/actions/actions/generate-changelog@v1
   id: changelog
+  with:
+    config-path: "" # optional
+    version: "" # optional
+    tag-pattern: "" # optional
 
 - uses: softprops/action-gh-release@v2
   with:
@@ -34,11 +38,18 @@
     body: ${{ steps.changelog.outputs.changelog }}
 ```
 
-## Consumer Requirement
+## Behavior
+
+1. **Detect version:** from git tags (`git tag --sort=-v:refname`) or explicit input
+2. **Build `git-cliff` args:** via `build-args.sh` (testable, no inline expressions)
+3. **Run `git-cliff`:** using bundled `cliff.toml` with kaomoji groups
+
+## What you need
 
 - `actions/checkout@v4` with `fetch-depth: 0`
 
 ## Security
 
-- no secrets required
-- use `GITHUB_TOKEN` via git-cliff-action (read repo history)
+- No secrets required
+- Uses `GITHUB_TOKEN` via git-cliff-action (read repo history)
+- Permissions: `contents: read`
