@@ -21,7 +21,7 @@
 ```yaml
 - uses: nanoolabs/actions/actions/setup-runtime@v1
   with:
-    version: "2" # optional, auto-detects from .tool-versions/.dvmrc
+    version: "2" # optional, defaults to Deno 2 if no .tool-versions/.dvmrc found
     # cache-key: custom-suffix
 
 - run: deno install
@@ -32,6 +32,7 @@
 - Auto detect version from `.tool-versions` (asdf) or `.dvmrc` (dvm)
   - `.tool-versions`: strips inline comments, handles leading whitespace
   - `.dvmrc`: picks first line starting with digit
+  - Falls back to Deno 2 if neither file exists
 - Uses `denoland/setup-deno@v2`
 - Caches `~/.cache/deno`
 - Cache key includes `deno.lock` / `import_map.json` hash for automatic invalidation
@@ -44,3 +45,16 @@ Detects Deno version from `.tool-versions` / `.dvmrc` for automated dependency u
 
 - No secrets required
 - Permissions: `contents: read`
+
+## Windows Support
+
+Works on Windows runners via Git Bash. Deno publish supported.
+
+## References & Impact
+
+| Source              | URL                                    | Impact                  |
+| ------------------- | -------------------------------------- | ----------------------- |
+| Deno runtime        | https://deno.land/                     | Default Deno 2 fallback |
+| denoland/setup-deno | https://github.com/denoland/setup-deno | Action for Deno setup   |
+| asdf .tool-versions | https://asdf-vm.com/                   | Version file format     |
+| dvm                 | https://github.com/justjavac/dvm       | `.dvmrc` version file   |
