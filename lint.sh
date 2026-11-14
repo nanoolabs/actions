@@ -16,8 +16,14 @@ SCRIPTS=(
   actions/setup-runtime/resolve-version.sh
   actions/validate-contract/install.sh
   actions/validate-contract/run.sh
+  actions/generate-changelog/build-args.sh
   actions/generate-changelog/detect-version.sh
   actions/mirror/push.sh
+  actions/release-preview/detect-version.sh
+  actions/release-preview/create-summary.sh
+  actions/release-apply/move-major-tag.sh
+  actions/release-apply/publish.sh
+  actions/release-apply/verify-tag.sh
   release-action/resolve-config.sh
 )
 
