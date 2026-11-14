@@ -1,0 +1,51 @@
+name: "Validate Contract"
+description: "Validate workflow/action contracts with actionlint and schema checks"
+inputs:
+  path:
+    description: "Path to workflow/action files to validate"
+    required: false
+    type: string
+    default: "."
+  version:
+    description: "actionlint version (e.g., 1.7.12 or latest)"
+    required: false
+    type: string
+    default: ""
+  check-permissions:
+    description: "Check for least-privilege permissions"
+    required: false
+    type: boolean
+    default: "true"
+  fail-on-error:
+    description: "Fail on validation errors"
+    required: false
+    type: boolean
+    default: "true"
+outputs:
+  violations:
+    description: "JSON array of violations found"
+    value: ${{ steps.run-validation.outputs.violations }}
+  passed:
+    description: "Whether all checks passed"
+    value: ${{ steps.run-validation.outputs.passed }}
+permissions:
+  contents: read
+runs:
+  using: "composite"
+  steps:
+    - name: Download actionlint
+      shell: bash
+      run: ${{ github.action_path }}/install.sh
+      env:
+        RUNNER_OS: ${{ runner.os }}
+        RUNNER_ARCH: ${{ runner.arch }}
+        VERSION: ${{ inputs.version || '1.7.12' }}
+
+    - name: Run validation
+      id: run-validation
+      shell: bash
+      run: ${{ github.action_path }}/run.sh
+      env:
+        PATH_INPUT: ${{ inputs.path }}
+        CHECK_PERMISSIONS: ${{ inputs.check-permissions }}
+        FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
