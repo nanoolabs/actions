@@ -53,3 +53,12 @@
 - No secrets required
 - Uses `GITHUB_TOKEN` via git-cliff-action (read repo history)
 - Permissions: `contents: read`
+
+## References & Impact
+
+| Source                           | URL                                                                             | Impact                        |
+| -------------------------------- | ------------------------------------------------------------------------------- | ----------------------------- |
+| git-cliff                        | https://github.com/orhun/git-cliff                                              | Changelog generation engine   |
+| git-cliff config docs            | https://git-cliff.org/docs/configuration/changelog                              | `cliff.toml` format reference |
+| Kaomoji source                   | https://github.com/nanoolabs/kaomoji                                            | Byte-for-byte group glyphs    |
+| GitHub Actions composite actions | https://docs.github.com/en/actions/creating-actions/creating-a-composite-action | Action structure reference    |
